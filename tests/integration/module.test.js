@@ -229,7 +229,7 @@ describe('@wdk/wallet-evm-erc-4337', () => {
 
     expect(transaction.status).toBe(1)
 
-    expect(estimatedFee).toBe(fee)
+    expect(fee).toBe(estimatedFee)
   }, TIMEOUT)
 
   test('should derive two accounts, send a tx from account 0 to 1 and get the correct balances', async () => {
@@ -267,12 +267,15 @@ describe('@wdk/wallet-evm-erc-4337', () => {
       amount: 1n
     }
 
+    const { fee: estimatedFee } = await account0.quoteTransfer(TRANSACTION)
+
     const { hash, fee } = await account0.transfer(TRANSACTION)
 
     const transaction = await waitForTx(hash, account0)
 
     expect(transaction.status).toBe(1)
-    expect(fee).toBe(fee)
+
+    expect(fee).toBe(estimatedFee)
   }, TIMEOUT)
 
   test('should derive two accounts by their paths, transfer a token from account 0 to 1 and get the correct balances and token balances', async () => {
