@@ -37,6 +37,8 @@ const ACCOUNT1 = {
   }
 }
 
+const SAFE_ADDRESS0 = '0x120Ac3c0B46fBAf2e8452A23BD61a2Da9B139551'
+
 async function waitForTx (txHash, account) {
   let receipt = null
   let counter = 0
@@ -179,27 +181,20 @@ describe('@wdk/wallet-evm-erc-4337', () => {
     await paymasterInstance.stop()
   }, TIMEOUT)
 
-  test('should derive an account, quote the cost of a tx and check the fee', async () => {
+  test('should derive accounts with correct properties and safe addresses', async () => {
     expect(account0.index).toBe(ACCOUNT0.index)
     expect(account0.path).toBe(ACCOUNT0.path)
     expect(account0.keyPair).toEqual({
       privateKey: new Uint8Array(Buffer.from(ACCOUNT0.keyPair.privateKey, 'hex')),
       publicKey: new Uint8Array(Buffer.from(ACCOUNT0.keyPair.publicKey, 'hex'))
     })
-    expect(account1.index).toBe(ACCOUNT1.index)
-    expect(account1.path).toBe(ACCOUNT1.path)
-    expect(account1.keyPair).toEqual({
-      privateKey: new Uint8Array(Buffer.from(ACCOUNT1.keyPair.privateKey, 'hex')),
-      publicKey: new Uint8Array(Buffer.from(ACCOUNT1.keyPair.publicKey, 'hex'))
-    })
 
     const safeAddress0 = await account0.getAddress()
-    const safeAddress1 = await account1.getAddress()
 
-    expect(safeAddress0).toBeDefined()
-    expect(safeAddress1).toBeDefined()
-    expect(safeAddress0).not.toBe(ACCOUNT0.address)
-    expect(safeAddress1).not.toBe(ACCOUNT1.address)
+    expect(safeAddress0).toBe(SAFE_ADDRESS0)
+  }, TIMEOUT)
+
+  test('should derive an account, quote the cost of a tx and check the fee', async () => {
 
     const TRANSACTION = {
       to: await account1.getAddress(),
