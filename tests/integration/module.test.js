@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, afterAll, jest } from '@jest/globals'
+import { describe, expect, test, beforeAll, beforeEach, afterAll, jest } from '@jest/globals'
 import WalletManagerEvmErc4337 from '../../index.js'
 import { ethers } from 'ethers'
 import { alto } from 'prool/instances'
@@ -105,8 +105,7 @@ async function deployTestTokens () {
   }
 }
 
-async function fundAccountsWithTokens (testToken, accounts) {
-  let nonce = await ethersProvider.getTransactionCount(fundedWallet.address)
+async function fundAccountsWithTokens (testToken, accounts, nonce) {
   for (const account of accounts) {
     await transfer(testToken, account, 100, fundedWallet, nonce++)
   }
@@ -122,16 +121,18 @@ describe('@wdk/wallet-evm-erc-4337', () => {
   let paymasterAddress
 
   beforeAll(async () => {
-    const tokens = await deployTestTokens()
-    testToken = tokens.testToken
-    mockPaymasterToken = tokens.mockPaymasterToken
-
     const servers = await setupServers()
 
     bundlerInstance = servers.bundlerInstance
     paymasterInstance = servers.paymasterInstance
 
     paymasterAddress = await discoverPaymasterAddress('http://localhost:3000', ENTRY_POINT_ADDRESS, MOCK_PAYMASTER_TOKEN_ADDRESS)
+  }, TIMEOUT)
+
+  beforeEach(async () => {
+    const tokens = await deployTestTokens()
+    testToken = tokens.testToken
+    mockPaymasterToken = tokens.mockPaymasterToken
 
     const config = {
       chainId: 1,
@@ -415,8 +416,6 @@ describe('@wdk/wallet-evm-erc-4337', () => {
     }
 
     await expect(account.transfer(TRANSFER))
-      .rejects.toThrow(expect.objectContaining({
-        details: expect.stringContaining('0xacfdb444')
-      }))
+      .rejects.toThrow('Exceeded maximum fee cost for transfer operation.')
   }, TIMEOUT)
 })
