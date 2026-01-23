@@ -129,7 +129,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
         owners: [this._ownerAccountAddress],
         saltNonce: SALT_NONCE,
         chainId: this._config.chainId,
-        safeModulesVersion: this._config.safeModulesVersion
+        safeModulesVersion: this._config.safeModulesVersion ?? '0.3.0'
       })
     }
 
