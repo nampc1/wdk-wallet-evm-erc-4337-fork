@@ -76,6 +76,7 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
      * Disposes the wallet account, erasing the private key from the memory.
      */
     dispose(): void;
+    _getSafe4337Pack(config: any): Promise<Safe4337Pack>;
     /** @private */
     private _sendUserOperation;
 }
@@ -92,3 +93,4 @@ export type EvmErc4337WalletPaymasterTokenConfig = import("./wallet-account-read
 export type EvmErc4337WalletSponsorshipPolicyConfig = import("./wallet-account-read-only-evm-erc-4337.js").EvmErc4337WalletSponsorshipPolicyConfig;
 export type EvmErc4337WalletNativeCoinsConfig = import("./wallet-account-read-only-evm-erc-4337.js").EvmErc4337WalletNativeCoinsConfig;
 import WalletAccountReadOnlyEvmErc4337 from './wallet-account-read-only-evm-erc-4337.js';
+import { Safe4337Pack } from '@wdk-safe-global/relay-kit';

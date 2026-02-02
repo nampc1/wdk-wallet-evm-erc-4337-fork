@@ -95,8 +95,8 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
     /**
      * Map of Safe4337Pack instances cached by configuration.
      *
-     * @protected
-     * @type {Map<string, Safe4337Pack>}
+     * @private
+     * @type {Map<string, import('@wdk-safe-global/relay-kit').Safe4337Pack>}
      */
     this._safe4337Packs = new Map()
 
@@ -260,7 +260,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    *
    * @param {string} token - The token's address.
    * @param {string} spender - The spender's address.
-   * @returns {Promise<bigint>} - The allowance.
+   * @returns {Promise<bigint>} The allowance.
    */
   async getAllowance (token, spender) {
     const readOnlyAccount = await this._getEvmReadOnlyAccount()
@@ -284,8 +284,9 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    * Validates the configuration to ensure all required fields are present.
    *
    * @protected
-   * @param {EvmErc4337WalletConfig} config - The configuration to validate.
+   * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration to validate.
    * @throws {Error} If the configuration is invalid or has missing required fields.
+   * @returns {void}
    */
   _validateConfig (config) {
     const { isSponsored, useNativeCoins, paymasterUrl, paymasterAddress, paymasterToken } = config
@@ -331,7 +332,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    * Returns the safe's erc-4337 pack of the account.
    *
    * @protected
-   * @param {EvmErc4337WalletConfig} config - The configuration object.
+   * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration object.
    * @returns {Promise<Safe4337Pack>} The safe's erc-4337 pack.
    */
   async _getSafe4337Pack (config) {
@@ -428,7 +429,13 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
     return this._feeEstimator
   }
 
-  /** @private */
+  /**
+   * @private
+   * @param {EvmTransaction[]} txs - The transactions.
+   * @param {Object} options - The options.
+   * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration.
+   * @returns {Promise<bigint>} The gas cost.
+   */
   async _getUserOperationGasCost (txs, options, config) {
     const safe4337Pack = await this._getSafe4337Pack(config)
 

@@ -1,3 +1,4 @@
+export const SALT_NONCE: "0x69b348339eea4ed93f9d11931c3b894c8f9d8c7663a053024b11cb7eb4e5a1f6";
 export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOnly {
     /**
      * Creates a new read-only evm [erc-4337](https://www.erc4337.io/docs) wallet account.
@@ -14,12 +15,12 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
      */
     protected _config: Omit<EvmErc4337WalletConfig, "transferMaxFee">;
     /**
-     * The safe's implementation of the erc-4337 standard.
+     * Map of Safe4337Pack instances cached by configuration.
      *
-     * @protected
-     * @type {Safe4337Pack | undefined}
+     * @private
+     * @type {Map<string, import('@wdk-safe-global/relay-kit').Safe4337Pack>}
      */
-    protected _safe4337Pack: Safe4337Pack | undefined;
+    private _safe4337Packs;
     /**
      * The safe's fee estimator.
      *
@@ -76,9 +77,9 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
      *
      * @param {TransferOptions} options - The transfer's options.
      * @param {Partial<EvmErc4337WalletPaymasterTokenConfig | EvmErc4337WalletSponsorshipPolicyConfig | EvmErc4337WalletNativeCoinsConfig>} [config] - If set, overrides the given configuration options.
-     * @returns {Promise<Omit<TransferResult, 'hash'>>} The transfer's quotes.
+     * @returns {Promise<Omit<TransactionResult, 'hash'>>} The transfer's quotes.
      */
-    quoteTransfer(options: TransferOptions, config?: Partial<EvmErc4337WalletPaymasterTokenConfig | EvmErc4337WalletSponsorshipPolicyConfig | EvmErc4337WalletNativeCoinsConfig>): Promise<Omit<TransferResult, "hash">>;
+    quoteTransfer(options: TransferOptions, config?: Partial<EvmErc4337WalletPaymasterTokenConfig | EvmErc4337WalletSponsorshipPolicyConfig | EvmErc4337WalletNativeCoinsConfig>): Promise<Omit<TransactionResult, "hash">>;
     /**
      * Returns a transaction's receipt.
      *
@@ -98,7 +99,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
      *
      * @param {string} token - The token's address.
      * @param {string} spender - The spender's address.
-     * @returns {Promise<bigint>} - The allowance.
+     * @returns {Promise<bigint>} The allowance.
      */
     getAllowance(token: string, spender: string): Promise<bigint>;
     /**
@@ -109,13 +110,24 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
      * @returns {Promise<boolean>} True if the signature is valid.
      */
     verify(message: string, signature: string): Promise<boolean>;
+
+    /**
+     * Validates the configuration to ensure all required fields are present.
+     *
+     * @protected
+     * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration to validate.
+     * @throws {Error} If the configuration is invalid or has missing required fields.
+     * @returns {void}
+     */
+    protected _validateConfig(config: Omit<EvmErc4337WalletConfig, "transferMaxFee">): void;
     /**
      * Returns the safe's erc-4337 pack of the account.
      *
      * @protected
+     * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration object.
      * @returns {Promise<Safe4337Pack>} The safe's erc-4337 pack.
      */
-    protected _getSafe4337Pack(): Promise<Safe4337Pack>;
+    protected _getSafe4337Pack(config: Omit<EvmErc4337WalletConfig, "transferMaxFee">): Promise<Safe4337Pack>;
     /**
      * Returns the chain id.
      *
@@ -127,7 +139,13 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
     private _getEvmReadOnlyAccount;
     /** @private */
     private _getFeeEstimator;
-    /** @private */
+    /**
+     * @private
+     * @param {EvmTransaction[]} txs - The transactions.
+     * @param {Object} options - The options.
+     * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration.
+     * @returns {Promise<bigint>} The gas cost.
+     */
     private _getUserOperationGasCost;
 }
 export type Eip1193Provider = import("ethers").Eip1193Provider;
@@ -182,9 +200,6 @@ export type EvmErc4337WalletPaymasterTokenConfig = {
      * - The paymaster token configuration.
      */
     paymasterToken: {
-        /**
-         * - The address of the paymaster token.
-         */
         address: string;
     };
     /**
