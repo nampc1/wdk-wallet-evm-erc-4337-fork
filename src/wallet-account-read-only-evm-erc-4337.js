@@ -18,11 +18,11 @@ import { WalletAccountReadOnly } from '@tetherto/wdk-wallet'
 
 import { WalletAccountReadOnlyEvm } from '@tetherto/wdk-wallet-evm'
 
-import { Safe4337Pack, GenericFeeEstimator, PimlicoFeeEstimator } from '@wdk-safe-global/relay-kit'
+import { Safe4337Pack, GenericFeeEstimator, PimlicoFeeEstimator } from '@tetherto/wdk-safe-relay-kit'
 
 /** @typedef {import('ethers').Eip1193Provider} Eip1193Provider */
 
-/** @typedef {import('@wdk-safe-global/relay-kit').UserOperationReceipt} UserOperationReceipt */
+/** @typedef {import('@tetherto/wdk-safe-relay-kit').UserOperationReceipt} UserOperationReceipt */
 
 /** @typedef {import('@tetherto/wdk-wallet-evm').EvmTransaction} EvmTransaction */
 /** @typedef {import('@tetherto/wdk-wallet-evm').TransactionResult} TransactionResult */
@@ -195,6 +195,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    *
    * @param {TransferOptions} options - The transfer's options.
    * @param {Pick<EvmErc4337WalletPaymasterTokenConfig, 'isSponsored' | 'paymasterToken'> | Pick<EvmErc4337WalletSponsorshipPolicyConfig, 'isSponsored'>} [config] - If set, overrides the 'paymasterToken' and 'isSponsored' options defined in the wallet account configuration.
+   * @returns {Promise<Omit<TransferResult, 'hash'>>} The transfer's quotes.
    */
   async quoteTransfer (options, config) {
     const tx = await WalletAccountReadOnlyEvm._getTransferTransaction(options)
@@ -368,11 +369,11 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
         maxFeePerGas
       } = safeOperation.userOperation
 
-      const gasCost = Number((callGasLimit + verificationGasLimit + preVerificationGas + paymasterVerificationGasLimit + paymasterPostOpGasLimit) * maxFeePerGas)
+      const gasCost = (callGasLimit + verificationGasLimit + preVerificationGas + paymasterVerificationGasLimit + paymasterPostOpGasLimit) * maxFeePerGas
 
       const exchangeRate = await safe4337Pack.getTokenExchangeRate(options.paymasterTokenAddress)
 
-      const gasCostInPaymasterToken = Math.ceil(gasCost * exchangeRate / 10 ** 18)
+      const gasCostInPaymasterToken = (gasCost * exchangeRate + (10n ** 18n - 1n)) / (10n ** 18n)
 
       return gasCostInPaymasterToken
     } catch (error) {
