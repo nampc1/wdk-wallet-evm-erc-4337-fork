@@ -379,7 +379,9 @@ new WalletAccountEvmErc4337(seed, path, config)
 |--------|-------------|---------|
 | `getAddress()` | Returns the smart contract wallet address | `Promise<string>` |
 | `sign(message)` | Signs a message using the account's private key | `Promise<string>` |
+| `signTypedData(typedData)` | Signs typed data according to EIP-712 | `Promise<string>` |
 | `verify(message, signature)` | Verifies a message signature | `Promise<boolean>` |
+| `verifyTypedData(typedData, signature)` | Verifies a typed data signature | `Promise<boolean>` |
 | `sendTransaction(tx, config)` | Sends a transaction via UserOperation | `Promise<{hash: string, fee: bigint}>` |
 | `quoteSendTransaction(tx, config)` | Estimates the fee for a UserOperation | `Promise<{fee: bigint}>` |
 | `transfer(options, config)` | Transfers ERC20 tokens via UserOperation | `Promise<{hash: string, fee: bigint}>` |
@@ -413,6 +415,40 @@ const signature = await account.sign('Hello ERC-4337!')
 console.log('Signature:', signature)
 ```
 
+##### `signTypedData(typedData)`
+Signs typed data according to EIP-712.
+
+**Parameters:**
+- `typedData` (object):
+  - `domain` (object): The EIP-712 domain separator
+  - `types` (object): The type definitions
+  - `message` (object): The structured message to sign
+
+**Returns:** `Promise<string>` - The typed data signature
+
+**Example:**
+```javascript
+const signature = await account.signTypedData({
+  domain: {
+    name: 'MyDApp',
+    version: '1',
+    chainId: 1,
+    verifyingContract: '0x...'
+  },
+  types: {
+    Transfer: [
+      { name: 'to', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ]
+  },
+  message: {
+    to: '0x1234567890abcdef1234567890abcdef12345678',
+    amount: '1000000'
+  }
+})
+console.log('Typed data signature:', signature)
+```
+
 ##### `verify(message, signature)`
 Verifies a message signature using the account's public key.
 
@@ -426,6 +462,44 @@ Verifies a message signature using the account's public key.
 ```javascript
 const isValid = await account.verify('Hello ERC-4337!', signature)
 console.log('Signature valid:', isValid)
+```
+
+##### `verifyTypedData(typedData, signature)`
+Verifies a typed data signature against the account's address.
+
+**Parameters:**
+- `typedData` (object):
+  - `domain` (object): The EIP-712 domain separator
+  - `types` (object): The type definitions
+  - `message` (object): The structured message that was signed
+- `signature` (string): The signature to verify
+
+**Returns:** `Promise<boolean>` - True if the signature is valid
+
+**Example:**
+```javascript
+const isValid = await account.verifyTypedData(
+  {
+    domain: {
+      name: 'MyDApp',
+      version: '1',
+      chainId: 1,
+      verifyingContract: '0x...'
+    },
+    types: {
+      Transfer: [
+        { name: 'to', type: 'address' },
+        { name: 'amount', type: 'uint256' }
+      ]
+    },
+    message: {
+      to: '0x1234567890abcdef1234567890abcdef12345678',
+      amount: '1000000'
+    }
+  },
+  signature
+)
+console.log('Typed data signature valid:', isValid)
 ```
 
 ##### `sendTransaction(tx)`
@@ -634,6 +708,7 @@ new WalletAccountReadOnlyEvmErc4337(address, config)
 | `quoteSendTransaction(tx)` | Estimates the fee for a UserOperation | `Promise<{fee: bigint}>` |
 | `quoteTransfer(options)` | Estimates the fee for an ERC20 transfer | `Promise<{fee: bigint}>` |
 | `verify(message, signature)` | Verifies a message signature | `Promise<boolean>` |
+| `verifyTypedData(typedData, signature)` | Verifies a typed data signature | `Promise<boolean>` |
 
 ##### `predictSafeAddress(owner, config)` (static)
 Predicts the Safe smart contract address for a given EOA owner without requiring network calls.
@@ -744,6 +819,44 @@ Verifies a message signature using the account's public key.
 ```javascript
 const isValid = await readOnlyAccount.verify('Hello ERC-4337!', signature)
 console.log('Signature valid:', isValid)
+```
+
+##### `verifyTypedData(typedData, signature)`
+Verifies a typed data signature against the account's address.
+
+**Parameters:**
+- `typedData` (object):
+  - `domain` (object): The EIP-712 domain separator
+  - `types` (object): The type definitions
+  - `message` (object): The structured message that was signed
+- `signature` (string): The signature to verify
+
+**Returns:** `Promise<boolean>` - True if the signature is valid
+
+**Example:**
+```javascript
+const isValid = await account.verifyTypedData(
+  {
+    domain: {
+      name: 'MyDApp',
+      version: '1',
+      chainId: 1,
+      verifyingContract: '0x...'
+    },
+    types: {
+      Transfer: [
+        { name: 'to', type: 'address' },
+        { name: 'amount', type: 'uint256' }
+      ]
+    },
+    message: {
+      to: '0x1234567890abcdef1234567890abcdef12345678',
+      amount: '1000000'
+    }
+  },
+  signature
+)
+console.log('Typed data signature valid:', isValid)
 ```
 
 ## 🌐 Supported Networks
