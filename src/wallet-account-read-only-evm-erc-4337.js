@@ -26,7 +26,7 @@ import { ConfigurationError } from './errors.js'
 
 /** @typedef {import('@tetherto/wdk-safe-relay-kit').UserOperationReceipt} UserOperationReceipt */
 
-/** @typedef {import('@tetherto/wdk-safe-relay-kit/dist/src/packs/safe-4337/types').IFeeEstimator} IFeeEstimator */
+/** @typedef {import('@tetherto/wdk-safe-relay-kit').IFeeEstimator} IFeeEstimator */
 
 /** @typedef {import('@tetherto/wdk-wallet-evm').EvmTransaction} EvmTransaction */
 /** @typedef {import('@tetherto/wdk-wallet-evm').TransactionResult} TransactionResult */
