@@ -124,10 +124,10 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
      * Returns the safe's erc-4337 pack of the account.
      *
      * @protected
-     * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration object.
+     * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} [config] - The configuration object. Defaults to this._config if not provided.
      * @returns {Promise<Safe4337Pack>} The safe's erc-4337 pack.
      */
-    protected _getSafe4337Pack(config: Omit<EvmErc4337WalletConfig, "transferMaxFee">): Promise<Safe4337Pack>;
+    protected _getSafe4337Pack(config?: Omit<EvmErc4337WalletConfig, "transferMaxFee">): Promise<Safe4337Pack>;
     /**
      * Returns the chain id.
      *

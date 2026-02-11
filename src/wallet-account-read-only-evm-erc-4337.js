@@ -232,7 +232,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    * @returns {Promise<EvmTransactionReceipt | null>} – The receipt, or null if the transaction has not been included in a block yet.
    */
   async getTransactionReceipt (hash) {
-    const safe4337Pack = await this._getSafe4337Pack(this._config)
+    const safe4337Pack = await this._getSafe4337Pack()
 
     const evmReadOnlyAccount = await this._getEvmReadOnlyAccount()
 
@@ -252,7 +252,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    * @returns {Promise<UserOperationReceipt | null>} – The receipt, or null if the user operation has not been included in a block yet.
    */
   async getUserOperationReceipt (hash) {
-    const safe4337Pack = await this._getSafe4337Pack(this._config)
+    const safe4337Pack = await this._getSafe4337Pack()
 
     const userOp = await safe4337Pack.getUserOperationReceipt(hash)
 
@@ -329,10 +329,10 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    * Returns the safe's erc-4337 pack of the account.
    *
    * @protected
-   * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} config - The configuration object.
+   * @param {Omit<EvmErc4337WalletConfig, 'transferMaxFee'>} [config] - The configuration object. Defaults to this._config if not provided.
    * @returns {Promise<Safe4337Pack>} The safe's erc-4337 pack.
    */
-  async _getSafe4337Pack (config) {
+  async _getSafe4337Pack (config = this._config) {
     const { isSponsored, useNativeCoins, paymasterUrl, paymasterAddress, paymasterToken } = config
 
     let cacheKey
