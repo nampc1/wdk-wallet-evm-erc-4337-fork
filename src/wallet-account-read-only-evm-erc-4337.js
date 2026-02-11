@@ -203,9 +203,10 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
     }
 
     const fee = await this._getUserOperationGasCost([tx].flat(), {
+      ...mergedConfig,
       paymasterTokenAddress: useNativeCoins ? undefined : paymasterToken?.address,
       amountToApprove: useNativeCoins ? 0n : BigInt(Number.MAX_SAFE_INTEGER)
-    }, mergedConfig)
+    })
 
     return { fee: BigInt(fee) }
   }
@@ -421,7 +422,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
   }
 
   /** @private */
-  async _getUserOperationGasCost (txs, options, config) {
+  async _getUserOperationGasCost (txs, { amountToApprove, paymasterTokenAddress, ...config }) {
     const safe4337Pack = await this._getSafe4337Pack(config)
 
     const address = await this.getAddress()
@@ -431,7 +432,8 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
         transactions: txs.map(tx => ({ from: address, ...tx })),
         options: {
           feeEstimator: await this._getFeeEstimator(),
-          ...options
+          amountToApprove,
+          paymasterTokenAddress
         }
       })
 
@@ -446,11 +448,11 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
 
       const gasCost = (callGasLimit + verificationGasLimit + preVerificationGas + paymasterVerificationGasLimit + paymasterPostOpGasLimit) * maxFeePerGas
 
-      if (!options.paymasterTokenAddress) {
+      if (!paymasterTokenAddress) {
         return gasCost
       }
 
-      const exchangeRate = await safe4337Pack.getTokenExchangeRate(options.paymasterTokenAddress)
+      const exchangeRate = await safe4337Pack.getTokenExchangeRate(paymasterTokenAddress)
 
       const gasCostInPaymasterToken = (gasCost * exchangeRate + (10n ** 18n - 1n)) / (10n ** 18n)
 
