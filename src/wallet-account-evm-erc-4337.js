@@ -228,7 +228,7 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
     this._ownerAccount.dispose()
   }
 
-  async _getSafe4337Pack (config) {
+  async _getSafe4337Pack (config = this._config) {
     const { isSponsored, useNativeCoins, paymasterUrl, paymasterAddress, paymasterToken } = config
 
     let cacheKey
@@ -237,44 +237,37 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
     } else if (isSponsored) {
       cacheKey = `sponsored:${paymasterUrl}`
     } else {
-      cacheKey = `paymaster:${paymasterUrl}:${paymasterAddress}:${paymasterToken?.address}`
+      cacheKey = `paymaster:${paymasterUrl}:${paymasterAddress}`
     }
 
-    if (this._safe4337Packs.has(cacheKey)) {
-      return this._safe4337Packs.get(cacheKey)
+    if (!this._safe4337Packs.has(cacheKey)) {
+      const owner = await this._ownerAccount.getAddress()
+
+      const safe4337Pack = await Safe4337Pack.init({
+        provider: config.provider,
+        signer: this._ownerAccount._account,
+        bundlerUrl: config.bundlerUrl,
+        safeModulesVersion: config.safeModulesVersion,
+        options: {
+          owners: [owner],
+          threshold: 1,
+          saltNonce: SALT_NONCE
+        },
+        customContracts: {
+          entryPointAddress: config.entryPointAddress
+        },
+        paymasterOptions: useNativeCoins ? undefined : {
+          paymasterUrl,
+          paymasterAddress,
+          paymasterTokenAddress: paymasterToken?.address,
+          skipApproveTransaction: true
+        }
+      })
+
+      this._safe4337Packs.set(cacheKey, safe4337Pack)
     }
 
-    const owner = await this._ownerAccount.getAddress()
-
-    const initOptions = {
-      provider: config.provider,
-      signer: this._ownerAccount._account,
-      bundlerUrl: config.bundlerUrl,
-      safeModulesVersion: config.safeModulesVersion,
-      options: {
-        owners: [owner],
-        threshold: 1,
-        saltNonce: SALT_NONCE
-      },
-      customContracts: {
-        entryPointAddress: config.entryPointAddress
-      }
-    }
-
-    if (!useNativeCoins) {
-      initOptions.paymasterOptions = {
-        paymasterUrl,
-        paymasterAddress,
-        paymasterTokenAddress: paymasterToken?.address,
-        skipApproveTransaction: true
-      }
-    }
-
-    const safe4337Pack = await Safe4337Pack.init(initOptions)
-
-    this._safe4337Packs.set(cacheKey, safe4337Pack)
-
-    return safe4337Pack
+    return this._safe4337Packs.get(cacheKey)
   }
 
   /** @private */

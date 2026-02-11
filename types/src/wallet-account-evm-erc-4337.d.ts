@@ -76,7 +76,7 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
      * Disposes the wallet account, erasing the private key from the memory.
      */
     dispose(): void;
-    _getSafe4337Pack(config: any): Promise<Safe4337Pack>;
+    _getSafe4337Pack(config?: EvmErc4337WalletConfig): Promise<Safe4337Pack>;
     /** @private */
     private _sendUserOperation;
 }
