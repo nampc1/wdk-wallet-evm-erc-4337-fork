@@ -344,38 +344,31 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
       cacheKey = `paymaster:${paymasterUrl}:${paymasterAddress}`
     }
 
-    if (this._safe4337Packs.has(cacheKey)) {
-      return this._safe4337Packs.get(cacheKey)
+    if (!this._safe4337Packs.has(cacheKey)) {
+      const safe4337Pack = await Safe4337Pack.init({
+        provider: config.provider,
+        bundlerUrl: config.bundlerUrl,
+        safeModulesVersion: config.safeModulesVersion,
+        options: {
+          owners: [this._ownerAccountAddress],
+          threshold: 1,
+          saltNonce: SALT_NONCE
+        },
+        customContracts: {
+          entryPointAddress: config.entryPointAddress
+        },
+        paymasterOptions: useNativeCoins ? undefined : {
+          paymasterUrl,
+          paymasterAddress,
+          paymasterTokenAddress: paymasterToken?.address,
+          skipApproveTransaction: true
+        }
+      })
+
+      this._safe4337Packs.set(cacheKey, safe4337Pack)
     }
 
-    const initOptions = {
-      provider: config.provider,
-      bundlerUrl: config.bundlerUrl,
-      safeModulesVersion: config.safeModulesVersion,
-      options: {
-        owners: [this._ownerAccountAddress],
-        threshold: 1,
-        saltNonce: SALT_NONCE
-      },
-      customContracts: {
-        entryPointAddress: config.entryPointAddress
-      }
-    }
-
-    if (!useNativeCoins) {
-      initOptions.paymasterOptions = {
-        paymasterUrl,
-        paymasterAddress,
-        paymasterTokenAddress: paymasterToken?.address,
-        skipApproveTransaction: true
-      }
-    }
-
-    const safe4337Pack = await Safe4337Pack.init(initOptions)
-
-    this._safe4337Packs.set(cacheKey, safe4337Pack)
-
-    return safe4337Pack
+    return this._safe4337Packs.get(cacheKey)
   }
 
   /**
