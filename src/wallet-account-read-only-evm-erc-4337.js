@@ -294,14 +294,13 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
    */
   _validateConfig (config) {
     const { isSponsored, useNativeCoins, paymasterUrl, paymasterAddress, paymasterToken } = config
+    const missingFields = []
 
     if (isSponsored && useNativeCoins) {
       throw new ConfigurationError("Cannot use both 'isSponsored: true' and 'useNativeCoins: true'. Please use only one.")
     }
 
     if (!isSponsored && !useNativeCoins) {
-      const missingFields = []
-
       if (!paymasterUrl) {
         missingFields.push('paymasterUrl')
       }
@@ -310,18 +309,12 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
       }
       if (!paymasterToken) {
         missingFields.push('paymasterToken')
-      } else if (!paymasterToken.address) {
-        missingFields.push('paymasterToken.address')
       }
 
       if (missingFields.length > 0) {
         throw new ConfigurationError(`Missing required paymaster token configuration fields: ${missingFields.join(', ')}.`)
       }
-    }
-
-    if (isSponsored) {
-      const missingFields = []
-
+    } else if (isSponsored) {
       if (!paymasterUrl) {
         missingFields.push('paymasterUrl')
       }
