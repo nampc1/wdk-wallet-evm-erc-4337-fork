@@ -163,11 +163,9 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
     const amountToApprove = (isSponsored || useNativeCoins) ? 0n : BigInt(fee * FEE_TOLERANCE_COEFFICIENT / 100n)
 
     const hash = await this._sendUserOperation([tx].flat(), {
-      isSponsored,
-      paymasterTokenAddress: (isSponsored || useNativeCoins) ? undefined : paymasterToken?.address,
-      sponsorshipPolicyId: isSponsored ? sponsorshipPolicyId : undefined,
+      ...mergedConfig,
       amountToApprove
-    }, mergedConfig)
+    })
 
     return { hash, fee }
   }
@@ -199,11 +197,9 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
     const amountToApprove = (isSponsored || useNativeCoins) ? 0n : BigInt(fee * FEE_TOLERANCE_COEFFICIENT / 100n)
 
     const hash = await this._sendUserOperation([tx], {
-      isSponsored,
-      paymasterTokenAddress: (isSponsored || useNativeCoins) ? undefined : paymasterToken?.address,
-      sponsorshipPolicyId: isSponsored ? sponsorshipPolicyId : undefined,
+      ...mergedConfig,
       amountToApprove
-    }, mergedConfig)
+    })
 
     return { hash, fee }
   }
@@ -280,12 +276,21 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
   }
 
   /** @private */
-  async _sendUserOperation (txs, options, config) {
+  async _sendUserOperation (txs, { amountToApprove, ...config }) {
     const safe4337Pack = await this._getSafe4337Pack(config)
 
     const address = await this.getAddress()
 
     const twoMinutesFromNow = Math.floor(Date.now() / 1_000) + 2 * 60
+
+    const { isSponsored, useNativeCoins, paymasterToken, sponsorshipPolicyId } = config
+
+    const options = {
+      amountToApprove,
+      paymasterTokenAddress: (isSponsored || useNativeCoins) ? undefined : paymasterToken?.address,
+      isSponsored,
+      sponsorshipPolicyId: isSponsored ? sponsorshipPolicyId : undefined
+    }
 
     try {
       const safeOperation = await safe4337Pack.createTransaction({
