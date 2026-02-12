@@ -196,7 +196,7 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
       this._validateConfig(mergedConfig)
     }
 
-    const { isSponsored, useNativeCoins, paymasterToken } = mergedConfig
+    const { isSponsored, useNativeCoins } = mergedConfig
 
     if (isSponsored) {
       return { fee: 0n }
@@ -204,7 +204,6 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
 
     const fee = await this._getUserOperationGasCost([tx].flat(), {
       ...mergedConfig,
-      paymasterTokenAddress: useNativeCoins ? undefined : paymasterToken?.address,
       amountToApprove: useNativeCoins ? 0n : BigInt(Number.MAX_SAFE_INTEGER)
     })
 
@@ -423,10 +422,12 @@ export default class WalletAccountReadOnlyEvmErc4337 extends WalletAccountReadOn
   }
 
   /** @private */
-  async _getUserOperationGasCost (txs, { amountToApprove, paymasterTokenAddress, ...config }) {
+  async _getUserOperationGasCost (txs, { amountToApprove, ...config }) {
     const safe4337Pack = await this._getSafe4337Pack(config)
 
     const address = await this.getAddress()
+
+    const paymasterTokenAddress = config.useNativeCoins ? undefined : config.paymasterToken?.address
 
     try {
       const safeOperation = await safe4337Pack.createTransaction({
