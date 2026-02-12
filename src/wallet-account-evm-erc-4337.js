@@ -277,13 +277,13 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
 
   /** @private */
   async _sendUserOperation (txs, { amountToApprove, ...config }) {
+    const { useNativeCoins, paymasterToken, isSponsored, sponsorshipPolicyId } = config
+
     const safe4337Pack = await this._getSafe4337Pack(config)
 
     const address = await this.getAddress()
 
     const twoMinutesFromNow = Math.floor(Date.now() / 1_000) + 2 * 60
-
-    const { isSponsored, useNativeCoins, paymasterToken, sponsorshipPolicyId } = config
 
     const options = {
       amountToApprove,
