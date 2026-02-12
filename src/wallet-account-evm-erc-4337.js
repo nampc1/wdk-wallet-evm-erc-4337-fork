@@ -156,7 +156,7 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
       this._validateConfig(mergedConfig)
     }
 
-    const { isSponsored, useNativeCoins, paymasterToken, sponsorshipPolicyId } = mergedConfig
+    const { isSponsored, useNativeCoins } = mergedConfig
 
     const { fee } = await this.quoteSendTransaction(tx, config)
 
@@ -184,7 +184,7 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
       this._validateConfig(mergedConfig)
     }
 
-    const { isSponsored, useNativeCoins, paymasterToken, transferMaxFee, sponsorshipPolicyId } = mergedConfig
+    const { isSponsored, useNativeCoins, transferMaxFee } = mergedConfig
 
     const tx = await WalletAccountEvm._getTransferTransaction(options)
 
