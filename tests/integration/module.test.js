@@ -343,6 +343,32 @@ describe('@wdk/wallet-evm-erc-4337', () => {
     expect(isValid).toBe(true)
   }, TIMEOUT)
 
+  test('should derive an account, sign typed data and verify its signature', async () => {
+    const account0 = await wallet.getAccountByPath("0'/0/0")
+
+    const TYPED_DATA = {
+      domain: {
+        name: 'Test',
+        version: '1',
+        chainId: 1,
+        verifyingContract: '0x0000000000000000000000000000000000000000'
+      },
+      types: {
+        Message: [
+          { name: 'content', type: 'string' }
+        ]
+      },
+      message: {
+        content: 'Hello, world!'
+      }
+    }
+
+    const signature = await account0.signTypedData(TYPED_DATA)
+
+    const isValid = await account0.verifyTypedData(TYPED_DATA, signature)
+    expect(isValid).toBe(true)
+  }, TIMEOUT)
+
   test('should dispose the wallet and erase the private keys of the accounts', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
