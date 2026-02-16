@@ -233,23 +233,15 @@ export default class WalletAccountEvmErc4337 extends WalletAccountReadOnlyEvmErc
    * @returns {Promise<Safe4337Pack>} The safe's erc-4337 pack.
    */
   async _getSafe4337Pack (config = this._config) {
-    const owner = await this._ownerAccount.getAddress()
+    const safe4337Pack = await super._getSafe4337Pack(config)
 
-    const originalOwner = this._ownerAccountAddress
-    this._ownerAccountAddress = owner
+    const safeProvider = safe4337Pack.protocolKit.getSafeProvider()
 
-    try {
-      const safe4337Pack = await super._getSafe4337Pack(config)
-
-      const safeProvider = safe4337Pack.protocolKit.getSafeProvider()
-      if (!safeProvider.signer) {
-        safeProvider.signer = this._ownerAccount._account
-      }
-
-      return safe4337Pack
-    } finally {
-      this._ownerAccountAddress = originalOwner
+    if (!safeProvider.signer) {
+      safeProvider.signer = this._ownerAccount._account
     }
+
+    return safe4337Pack
   }
 
   /** @private */
